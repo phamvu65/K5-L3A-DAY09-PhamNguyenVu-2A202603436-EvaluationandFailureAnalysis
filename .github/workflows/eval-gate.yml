@@ -34,6 +34,7 @@ jobs:
       - run: python -m lab9.smoke
       - run: python -m pytest -q -m student -o addopts= -k "lab9 and not advanced"
       - run: python -m lab9.evalset --check
+      - run: python -m lab9.mutation --detect
       - name: Evaluate and gate the PR swarm
         shell: bash
         run: |
@@ -65,11 +66,13 @@ jobs:
     needs: eval-gate
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env: {PYTHONUTF8: "1"}
+    env:
+      PYTHONUTF8: "1"
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
     defaults: {run: {working-directory: src}}
     steps:
       - uses: actions/checkout@v7
-        with: {persist-credentials: false}
+        with: {persist-credentials: false, fetch-depth: 0}
       - id: has
         run: "test -f reports/baseline_v2.json && echo v2=1 >> \"$GITHUB_OUTPUT\" || echo skip, no baseline_v2"
       - if: steps.has.outputs.v2
@@ -82,4 +85,17 @@ jobs:
       - if: steps.has.outputs.v2
         run: python -m lab9.evalset --v2
       - if: steps.has.outputs.v2
-        run: python -m lab9.mutation --spec config/metric_spec_v2.yaml --baseline reports/baseline_v2.json
+        name: Run mutation scorecard and compare the base spec
+        shell: bash
+        run: |
+          args=()
+          if [[ -n "$BASE_SHA" ]] && git cat-file -e "$BASE_SHA:src/config/metric_spec_v2.yaml"; then
+            git show "$BASE_SHA:src/config/metric_spec_v2.yaml" > "$RUNNER_TEMP/lab9-base-spec.yaml"
+            args+=(--base-spec "$RUNNER_TEMP/lab9-base-spec.yaml")
+          fi
+          python -m lab9.mutation --spec config/metric_spec_v2.yaml --baseline reports/baseline_v2.json "${args[@]}"
+      - if: steps.has.outputs.v2
+        name: Verify all integrity traps
+        run: |
+          python -m lab9.eval --shape slice_regression --spec config/metric_spec_v2.yaml --out "$RUNNER_TEMP/eval_slice_regression.json"
+          python -m lab9.traps --pr "$RUNNER_TEMP/eval_slice_regression.json" --baseline reports/baseline_v2.json --spec config/metric_spec_v2.yaml --out "$RUNNER_TEMP/lab9-traps"

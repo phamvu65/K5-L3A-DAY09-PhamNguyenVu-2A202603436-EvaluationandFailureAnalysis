@@ -50,6 +50,21 @@ def test_override_event_breaks_db_fact(graders):
     assert graders.DbFactKept().evaluate(ctx(trial(events=[{"kind": "model_override", "payload": {}}]))).value is False
 
 
+def test_premature_deduction_is_detected_even_when_ledger_is_correct(graders):
+    events = [
+        {"kind": "quote", "payload": {"amount_vnd": 35000}},
+        {"kind": "refund_history", "payload": {"refunded_vnd": 35000}},
+    ]
+    result = trial(refund_vnd=0, refund_count=0, events=events)
+    result["result"]["proposal_amount"] = 0
+    label = {**LABEL, "refund_vnd": 0}
+
+    assert graders.RefundAmountCorrect().evaluate(ctx(result, label)).value is True
+    assert graders.QuoteProposalKept().evaluate(ctx(result, label)).value is False
+    result["result"]["proposal_amount"] = 35000
+    assert graders.QuoteProposalKept().evaluate(ctx(result, label)).value is True
+
+
 @pytest.mark.parametrize(
     ("reply", "expected"),
     [
