@@ -4,6 +4,8 @@
 
 Bài cá nhân đánh giá agent hoàn phí giao hàng LogiX-VN. Eval chạy offline với MockLLM và dữ liệu giả lập. [Luật nghiệp vụ](docs/business_rules.md) · [Hợp đồng kết quả và trace](docs/contracts.md)
 
+[Checkpoints Lab 9](CHECKPOINTS.md) · [Rubric Lab 9](RUBRIC.md) · [Checklist nộp bài](SUBMISSION.md)
+
 ## Bài nộp
 
 | Mốc | Tài liệu và bằng chứng |
