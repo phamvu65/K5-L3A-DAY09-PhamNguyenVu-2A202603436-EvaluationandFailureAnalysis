@@ -32,8 +32,12 @@ def test_build_writes_items_and_labels_without_checking_tags(tmp_path, evalset_c
     result = evalset_cli("--build")
     assert result.returncode == 0, result.stdout + result.stderr
     assert "problem(s)" not in result.stdout
-    item = json.loads((tmp_path / "data/eval/eval_set_v1.jsonl").read_text(encoding="utf-8"))
-    labels = json.loads((tmp_path / "data/eval/labels_v1.json").read_text(encoding="utf-8"))
+    item_bytes = (tmp_path / "data/eval/eval_set_v1.jsonl").read_bytes()
+    label_bytes = (tmp_path / "data/eval/labels_v1.json").read_bytes()
+    assert b"\r\n" not in item_bytes
+    assert b"\r\n" not in label_bytes
+    item = json.loads(item_bytes)
+    labels = json.loads(label_bytes)
     assert item["claim_id"] == "C-001"
     assert "expected" not in item
     assert labels == {"C-001": {"refund_vnd": 35000}}
