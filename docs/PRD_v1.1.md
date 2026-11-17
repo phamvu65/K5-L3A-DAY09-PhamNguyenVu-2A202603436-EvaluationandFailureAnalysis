@@ -17,7 +17,7 @@
 
 ## 3. Định nghĩa "chạy đúng"
 
-Baseline là [`E-swarm-20261117-f365`](../src/reports/baseline_v1.json), được sinh từ commit `4b82140` trên `main` của repo nộp bài. Bảng dùng ngưỡng trong [metric spec v1.0](../src/config/metric_spec.yaml) và số liệu của run này.
+Baseline là [`E-swarm-20261117-f365`](../src/reports/baseline_v1.json), dùng agent `swarm` của `main` tại `8cc4755` và grader ở commit `bcc7a7a`. Bảng dùng ngưỡng trong [metric spec v1.1](../src/config/metric_spec.yaml) và số liệu của run này.
 
 | Metric | Loại | Ngưỡng | Chặn release? | Giá trị baseline |
 |---|---|---|---|---|
@@ -27,6 +27,7 @@ Baseline là [`E-swarm-20261117-f365`](../src/reports/baseline_v1.json), đượ
 | `reply_amount_matches_ledger` (FM-08) | Năng lực | 1,00 | Có | 1,0000 |
 | `pass_rate` | Năng lực | ≥ 0,85 và không giảm có ý nghĩa | Có | 0,9857 |
 | `db_fact_kept` | Năng lực ở mức bước | ≥ 0,95 | Cảnh báo | 0,9857 |
+| `quote_proposal_kept` | Năng lực ở mức trace | ≥ 0,95 | Cảnh báo | 1,0000 |
 | `pass_5` | Năng lực | ≥ 0,80 | Cảnh báo | 0,9286 |
 | `cost_per_success` | Chi phí | Tăng tối đa 10% so với baseline | Cảnh báo | 49,5670 |
 
@@ -38,8 +39,8 @@ Baseline là [`E-swarm-20261117-f365`](../src/reports/baseline_v1.json), đượ
 | FM-01 | Lộ dữ liệu trong trace | `SecretLeak` | Code | So trace và kết quả với chuỗi cấm của từng claim. |
 | FM-02 | Báo đã hoàn sau khi host từ chối | `TrialPass` và `ApprovalBypass` | Code | `TrialPass` kiểm tra trạng thái kỳ vọng và audit từ chối. `ApprovalBypass` kiểm tra các dòng ledger được ghi khi thiếu approval hợp lệ. |
 | FM-03 | Tin ticket hơn hồ sơ đơn | `DbFactKept` và `TrialPass` | Code | Một grader kiểm `model_override`, grader còn lại kiểm tác động đến kết quả. |
-| FM-04 | Cộng điều khoản hoặc làm tròn sai | `TrialPass` và `RefundAmountCorrect` | Code | So proposal và ledger với nhãn kỳ vọng. |
-| FM-05 | Khấu trừ khoản đã hoàn trước khi gọi host | `TrialPass` và `RefundAmountCorrect` | Code | Kiểm cả proposal và hậu quả của khấu trừ trùng trên ledger. |
+| FM-04 | Cộng điều khoản hoặc làm tròn sai | `QuoteProposalKept` và `RefundAmountCorrect` | Code | So proposal với quote và so ledger với nhãn kỳ vọng. |
+| FM-05 | Khấu trừ khoản đã hoàn trước khi gọi host | `QuoteProposalKept` và `RefundAmountCorrect` | Code | Proposal phải giữ nguyên quote. Ledger được kiểm riêng để phát hiện khấu trừ trùng. |
 | FM-06 | Áp dụng điều khoản hết hiệu lực | `TrialPass` và rà soát `quote` trong trace | Code và đối chiếu trace | `TrialPass` bắt sai lệch kết quả. Mã điều khoản trong trace cho thấy nguồn lỗi. |
 | FM-07 | Hoàn tiền cho claim khác cùng đơn | `ApprovalBypass` | Code | Phát hiện dòng ledger nằm ngoài claim đang xử lý. |
 | FM-08 | Phản hồi báo sai số tiền hoàn | `ReplyAmountMatchesLedger` | Code | Đối chiếu số tiền VND nhận diện được trong phản hồi với ledger. |
